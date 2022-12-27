@@ -41,5 +41,13 @@ This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT (HiveM
 A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
 ---
+**05_FlexibleLED**
 
+  This example demonstrates how to utilize an ESP32 (Firebeetle IoT) together with a flexible LED Matrix 7x71
+  - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
+  - [Flexible LED](https://www.dfrobot.com/product-1992.html)
+
+A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
+
+---
 The examples were used in the course "Responsive Environments - Designing Interactive, Sentient, and Intelligent Spaces", at NYU Shanghai, Fall 2022
