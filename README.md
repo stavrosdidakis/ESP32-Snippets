@@ -31,7 +31,7 @@ This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT (HiveM
   - [Rotary Encoder](https://www.amazon.com/Maxmoral-Encoder-Degrees-Compatible-Development/dp/B07M631J1Q)
   - [16-LED Neopixel](https://www.adafruit.com/product/1463)
   A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
-
+ 
 ---
 **04_FireBeetle_MQTT_receive_multiple_topics**
 
