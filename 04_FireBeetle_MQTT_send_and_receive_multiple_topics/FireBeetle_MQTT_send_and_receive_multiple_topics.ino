@@ -1,6 +1,9 @@
-//This example demonstrates how to utilize FireBeetle & MQTT
-//for sending and receiving messages over the network, which are published
-//on a specific topic.
+//This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT (HiveMQ)
+//for sending the value of a rotary encoder over the network and receiving it to control
+//a 16-LED Neopixel. Here, we use multiple topics, to control different properties of the Neopixel
+//that arrive on different MQTT topics. The messages are published on a specific topic within the MQTT broker
+//and can be viewed by any connected MQTT client.
+//A helpful utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
 //*********************************** Setup MQTT
 //Import libraries needed for MQTT
@@ -9,23 +12,25 @@
 #include <WiFiClientSecure.h>
 
 //Replace the next variables with your SSID (WiFi)/Password combination
-//const char* ssid = "nyushanghai-iot";     //GalaxyS20
-//const char* password = "";                //kaik3445
-
-const char* ssid = "GalaxyS20";     // "GalaxyS20"  | "nyushanghai-iot" 
-const char* password = "kaik3445";  // "kaik3445"   | ""
+const char* ssid = "xxx";
+const char* password = "xxx";
 
 //---- MQTT Broker settings
-const char* mqtt_server = "b69080e9018d4acfbd1949753ae15101.s1.eu.hivemq.cloud";
-const char* mqtt_username = "stv01";
-const char* mqtt_password = "stvddk01";
+const char* mqtt_server = "xxx.s1.eu.hivemq.cloud"; //Cluster credentials with HiveMQ
+const char* mqtt_username = "xxx";
+const char* mqtt_password = "xxx";
 const int mqtt_port = 8883;
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-const char inTopic[] =  "/MQTT-14/";   //The incoming topic
-const char outTopic[] = "/MQTT-14/";  //The outgoing topic
+const char inTopic1[] =  "/RED/";   //The incoming topic
+const char inTopic2[] =  "/GREEN/";   //The incoming topic
+const char inTopic3[] =  "/BLUE/";   //The incoming topic
+
+const char outTopic1[] = "/RED/";  //The outgoing topic
+const char outTopic2[] = "/GREEN/";  //The outgoing topic
+const char outTopic3[] = "/BLUE/";  //The outgoing topic
 
 //This certificate is used for authenticating with HiveMQ
 static const char *root_ca PROGMEM = R"EOF(
@@ -80,13 +85,15 @@ unsigned long lastButtonPress = 0;
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 #define LED_PIN   D2
-#define LED_COUNT 16
+#define LED_COUNT 48
 Adafruit_NeoPixel leds(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 uint32_t col;
 /////////////////////////////////////
 
 //This variable will store the incoming values from the MQTT broker
-int valueFromMQTT;
+int valueFromMQTTred = 255;
+int valueFromMQTTgreen = 0;
+int valueFromMQTTblue = 255;
 
 //Setup function
 void setup() {
@@ -112,9 +119,8 @@ void setup() {
   leds.begin();           // INITIALIZE NeoPixel leds object (REQUIRED)
   leds.show();            // Turn OFF all pixels ASAP
   leds.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-  
-  //Set a purple color for the LEDs on start
-  col = leds.Color(255,   0,   255);
+  //Set a purple color for the LEDs
+  col = leds.Color(valueFromMQTTred, valueFromMQTTgreen, valueFromMQTTblue);
 }
 
 //Function responsible for the WiFi connection
@@ -124,10 +130,15 @@ void setup_wifi() {
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
- 
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
+  delay(1000);
+  WiFi.disconnect();
+  delay(1000);
+  WiFi.begin(ssid, password);
+  delay(1000);
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -146,13 +157,13 @@ void loop() {
   client.loop();
 
   rotEnc();
-  
+
   //Our routine for controlling the LED ring
   //In this instance, we use the valueFromMQTT variable (defined in callback)
-  //Since the receiving value is from 0 to 16 (as assigned in the
-  //rotEnc() function), we use this number to control the number of open LEDs
   leds.clear();
-  for (int i = 0; i < valueFromMQTT; i++) {
+
+  col = leds.Color(valueFromMQTTred, valueFromMQTTgreen, valueFromMQTTblue);
+  for (int i = 0; i < LED_COUNT; i++) {
     leds.setPixelColor(i, col);
   }
   leds.show();
@@ -170,26 +181,28 @@ void rotEnc() {
     // If the DT state is different than the CLK state then
     // the encoder is rotating CCW so decrement
     if (digitalRead(DT) != currentStateCLK) {
-      counter --;
+      counter -= 10;
       currentDir = "CCW";
     } else {
       // Encoder is rotating CW so increment
-      counter ++;
+      counter += 10;
       currentDir = "CW";
     }
 
     //This function ensures that the counter always remains
-    //in a range between 0 and 16
-    counter = constrain(counter, 0, 16);
+    //in a range between 0 and 255
+    counter = constrain(counter, 0, 255);
 
     Serial.print("Direction: ");
     Serial.print(currentDir);
     Serial.print(" | Counter: ");
     Serial.println(counter);
-    
+
     //**********************************************
     //MQTT message function executes
-    publishMessage(outTopic,String(counter),true);   
+    publishMessage(outTopic1,String(counter),false);
+    publishMessage(outTopic2,String(counter),false);
+    publishMessage(outTopic3,String(counter),false);
   }
 
   // Remember last CLK state
@@ -204,11 +217,10 @@ void rotEnc() {
     //button has been pressed, released and pressed again
     if (millis() - lastButtonPress > 50) {
       Serial.println("Button pressed!");
-      
+
       //**********************************************
       //MQTT message function executes
-      //Sends rotary values from 0 to 16
-      publishMessage(outTopic,String(counter),true);   
+      //publishMessage(outTopic,String(counter),true);
     }
 
     // Remember last button press event
@@ -229,8 +241,9 @@ void reconnect() {
     // Attempt to connect
     if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
       Serial.println("connected");
-      client.subscribe(inTopic);   // subscribe the topics here
-      //client.subscribe(sensor2_topic);   // subscribe the topics here
+      client.subscribe(inTopic1);   // subscribe the topics here
+      client.subscribe(inTopic2);
+      client.subscribe(inTopic3);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -248,33 +261,57 @@ void publishMessage(const char* topic, String payload , boolean retained){
 
 //Callback function - get messages from MQTT
 void callback(char* topic, byte* payload, unsigned int length) {
-  /*
-  String incomingMessage = "";
-  for (int i = 0; i < length; i++){
-    incomingMessage+=(char)payload[i];
+  if (strcmp(topic,"/RED/")==0){
+      //Get the characters of the payload message
+    char* getValue;
+    getValue = (char*) malloc(length + 1);
+    memcpy(getValue, payload, length);
+    getValue[length] = '\0';
+
+    //Conversion to String
+    String getValueStr = (String) getValue;
+
+    //Conversion to Int
+    int getValueInt = getValueStr.toInt();
+    Serial.println("Message arrived ["+String(topic)+"]: "+getValueInt);
+
+    //Assign value to a global variable
+    valueFromMQTTred = getValueInt;
   }
-  Serial.println("Message arrived ["+String(topic)+"]: "+incomingMessage);
-  */
 
-  //Get the characters of the payload message
-  char* getValue;
-  getValue = (char*) malloc(length + 1);
-  memcpy(getValue, payload, length);
-  getValue[length] = '\0';
+  if (strcmp(topic,"/GREEN/")==0){
+      //Get the characters of the payload message
+    char* getValue;
+    getValue = (char*) malloc(length + 1);
+    memcpy(getValue, payload, length);
+    getValue[length] = '\0';
 
-  //Conversion to String
-  String getValueStr = (String) getValue;
+    //Conversion to String
+    String getValueStr = (String) getValue;
 
-  //Conversion to Float
-  //float getValueFloat = getValueStr.toFloat();
+    //Conversion to Int
+    int getValueInt = getValueStr.toInt();
+    Serial.println("Message arrived ["+String(topic)+"]: "+getValueInt);
 
-  //Conversion to Int
-  int getValueInt = getValueStr.toInt();
-  Serial.println("Message arrived ["+String(topic)+"]: "+getValueInt);
+    //Assign value to a global variable
+    valueFromMQTTgreen = getValueInt;
+  }
 
-  //Assign value to a global variable
-  //Since the receiving value is from 0 to 16 (as assigned in the
-  //rotEnc() function), we use this number to control the number of open LEDs
-  valueFromMQTT = getValueInt;
-  //col = leds.Color(random(255), random(255), random(255));
+  if (strcmp(topic,"/BLUE/")==0){
+      //Get the characters of the payload message
+    char* getValue;
+    getValue = (char*) malloc(length + 1);
+    memcpy(getValue, payload, length);
+    getValue[length] = '\0';
+
+    //Conversion to String
+    String getValueStr = (String) getValue;
+
+    //Conversion to Int
+    int getValueInt = getValueStr.toInt();
+    Serial.println("Message arrived ["+String(topic)+"]: "+getValueInt);
+
+    //Assign value to a global variable
+    valueFromMQTTblue = getValueInt;
+  }
 }

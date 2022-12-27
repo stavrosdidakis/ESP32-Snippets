@@ -1,6 +1,7 @@
-//This example demonstrates how to utilize FireBeetle & MQTT
+//This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT
 //for receiving messages over the network, which are published
-//on a specific topic.
+//on a specific topic. The code also shows how to connect and control
+//a 16-LED Neopixel ring with the incoming message
 
 //*********************************** Setup MQTT
 //Import libraries needed for MQTT
@@ -9,19 +10,19 @@
 #include <WiFiClientSecure.h>
 
 //Replace the next variables with your SSID (WiFi)/Password combination
-const char* ssid = "GalaxyS20";     // "GalaxyS20"  | "nyushanghai-iot" 
-const char* password = "kaik3445";  // "kaik3445"   | ""
+const char* ssid = "xxx";
+const char* password = "xxx";
 
 //---- MQTT Broker settings
-const char* mqtt_server = "b69080e9018d4acfbd1949753ae15101.s1.eu.hivemq.cloud";
-const char* mqtt_username = "stv01";
-const char* mqtt_password = "stvddk01";
+const char* mqtt_server = "xxx.s1.eu.hivemq.cloud"; //Cluster credentials with HiveMQ
+const char* mqtt_username = "xxx";
+const char* mqtt_password = "xxx";
 const int mqtt_port = 8883;
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-const char inTopic[] =  "/MQTT-14/";   //The incoming topic
+const char inTopic[] =  "/MQTT-01/";   //The incoming topic
 
 //This certificate is used for authenticating with HiveMQ
 static const char *root_ca PROGMEM = R"EOF(
@@ -85,12 +86,12 @@ void setup() {
   espClient.setCACert(root_ca);
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
-  
+
   //Settings for the LED pixels
   leds.begin();           // INITIALIZE NeoPixel leds object (REQUIRED)
   leds.show();            // Turn OFF all pixels ASAP
   leds.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-  
+
   //Set a purple color for the LEDs on start
   col = leds.Color(255,   0,   255);
 }
@@ -102,10 +103,10 @@ void setup_wifi() {
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
- 
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -122,7 +123,7 @@ void setup_wifi() {
 void loop() {
   if (!client.connected()) reconnect();
   client.loop();
-  
+
   //Our routine for controlling the LED ring
   //In this instance, we use the valueFromMQTT variable (defined in callback)
   //Since the receiving value is from 0 to 16 (as assigned in the
@@ -187,8 +188,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println("Message arrived ["+String(topic)+"]: "+getValueInt);
 
   //Assign value to a global variable
-  //Since the receiving value is from 0 to 16 (as assigned in the
-  //rotEnc() function), we use this number to control the number of open LEDs
+  //Since the receiving value is from 0 to 16, we use this number to control the number of open LEDs
   valueFromMQTT = getValueInt;
   //col = leds.Color(random(255), random(255), random(255));
 }
