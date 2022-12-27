@@ -10,8 +10,9 @@ A collection of code examples using **ESP32** (FireBeetle IoT) and other physica
   Materials needed for this example:
   - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
   - [Rotary Encoder](https://www.amazon.com/Maxmoral-Encoder-Degrees-Compatible-Development/dp/B07M631J1Q)
----
+  A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
+---
 **02_FireBeetle_MQTT_receive**
 
   This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT for receiving messages over the network, which are published on a specific topic. The code also shows how to connect and control a 16-LED Neopixel ring with the incoming message.
@@ -19,6 +20,7 @@ A collection of code examples using **ESP32** (FireBeetle IoT) and other physica
   Materials needed for this example:
   - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
   - [16-LED Neopixel](https://www.adafruit.com/product/1463)
+  A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
 ---
 **03_FireBeetle_MQTT_send_and_receive**
@@ -28,6 +30,7 @@ This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT (HiveM
   - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
   - [Rotary Encoder](https://www.amazon.com/Maxmoral-Encoder-Degrees-Compatible-Development/dp/B07M631J1Q)
   - [16-LED Neopixel](https://www.adafruit.com/product/1463)
+  A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
 ---
 **04_FireBeetle_MQTT_receive_multiple_topics**
@@ -37,8 +40,7 @@ This example demonstrates how to utilize an ESP32 (Firebeetle IoT) & MQTT (HiveM
   - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
   - [Rotary Encoder](https://www.amazon.com/Maxmoral-Encoder-Degrees-Compatible-Development/dp/B07M631J1Q)
   - [16-LED Neopixel](https://www.adafruit.com/product/1463)
-
-A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
+  A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
 
 ---
 **05_FlexibleLED**
@@ -47,7 +49,9 @@ A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos
   - [FireBeetle ESP32](https://www.dfrobot.com/product-1590.html)
   - [Flexible LED](https://www.dfrobot.com/product-1992.html)
 
-A helpful client utility is provided by HiveMQ here: http://www.hivemq.com/demos/websocket-client/
-
 ---
+**06_PingESP**
+
+  An example that shows how to utilize a ping sensor with Arduino, ESP8266, and ESP32
+
 The examples were used in the course "Responsive Environments - Designing Interactive, Sentient, and Intelligent Spaces", at NYU Shanghai, Fall 2022
